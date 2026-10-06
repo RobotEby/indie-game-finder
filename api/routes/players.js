@@ -18,7 +18,7 @@ router.get("/", async (req, res) => {
 router.get("/activity", async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT p.name AS player, COUNT(s.game_id) AS games_played, SUM(s.minutes_played) AS total_minutes
+      SELECT p.name AS player, COUNT(DISTINCT s.game_id) AS games_played, SUM(s.minutes_played) AS total_minutes
       FROM players p
       JOIN game_sessions s ON s.player_id = p.id
       GROUP BY p.id, p.name
@@ -35,7 +35,7 @@ router.get("/activity", async (req, res) => {
 router.get("/:name/library", async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT COUNT(*) AS games_in_library
+      `SELECT COUNT(DISTINCT s.game_id) AS games_in_library
        FROM game_sessions s
        JOIN players p ON p.id = s.player_id
        WHERE p.name = ?`,
