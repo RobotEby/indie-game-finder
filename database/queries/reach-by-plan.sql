@@ -1,6 +1,6 @@
 SELECT
   g.title AS name,
-  COUNT(s.player_id) AS players
+  COUNT(DISTINCT s.player_id) AS players
 FROM games g
 JOIN game_sessions s ON s.game_id = g.id
 JOIN players p ON p.id = s.player_id
