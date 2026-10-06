@@ -24,10 +24,10 @@ Most big game stores push the same AAA titles to the top. indie-game-finder exis
 | `players`         | Platform users; each with one active plan                               |
 | `developers`      | Registered indie studios                                                |
 | `games`           | Game catalog, each linked to a primary developer                        |
-| `game_sessions`   | History of games each player has played, with total time invested       |
+| `game_sessions`   | One row per play session (player, game, date, minutes); a player can play a game many times |
 | `followers`       | Players following developers                                            |
 
-Scripts live in `database/schema.sql` (table structure) and `database/seed.sql` (sample data for local development).
+Scripts live in `database/schema.sql` (table structure) and `database/seed.sql` (sample data for local development). Metrics such as `games_played`, `games_in_library` and `players_reached` count **distinct** games/players, not session rows. If your database was created before `game_sessions` allowed repeat sessions, apply `database/migrations/001-game-sessions-multiple-sessions.sql` (MySQL 8.0.16+).
 
 ## Supporting queries
 
@@ -71,13 +71,22 @@ Scripts live in `database/schema.sql` (table structure) and `database/seed.sql` 
 
 ## Tests
 
-All routes have integration tests with Jest + Supertest, using a mock of the connection pool (`db/__mocks__/pool.js`) — the suite runs without needing a real MySQL instance.
+All routes have route tests with Jest + Supertest, using a mock of the connection pool (`db/__mocks__/pool.js`) — the suite runs without needing a real MySQL instance.
 
 ```sh
 cd api
 npm install
 npm test
 ```
+
+A second suite runs the real routes against a real MySQL 8.0.16+ server, loading `database/schema.sql` and `database/seed.sql` first, so SQL the mock cannot validate (strict `GROUP BY`, `CHECK` and foreign-key rules, aggregate results) is covered. **It drops and recreates `indieGameFinder`, so use a disposable server**; it refuses to run unless `RUN_DB_INTEGRATION=1` is set.
+
+```sh
+cd api
+RUN_DB_INTEGRATION=1 npm run test:integration   # uses DB_HOST / DB_USER / DB_PASSWORD
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs the mocked suite on Node 20 and 22 and the MySQL suite against a `mysql:8.0` service container on every push to `main` and every pull request.
 
 ## Roadmap
 

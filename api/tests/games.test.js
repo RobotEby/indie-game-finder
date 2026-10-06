@@ -33,5 +33,6 @@ describe('/games routes', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual(fakeTrending);
     expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('LIMIT 2'));
+    expect(pool.query.mock.calls[0][0]).toMatch(/COUNT\(DISTINCT s\.player_id\)/);
   });
 });

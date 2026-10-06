@@ -38,7 +38,10 @@ CREATE TABLE game_sessions (
     game_id INT NOT NULL,
     session_date DATE NOT NULL,
     minutes_played INT NOT NULL,
-    UNIQUE KEY unique_player_game (player_id, game_id),
+    -- One row per play session: a player may play the same game many times.
+    -- Non-unique on purpose; it also serves as the index for the player FK.
+    KEY idx_sessions_player_game (player_id, game_id, session_date),
+    CONSTRAINT chk_sessions_minutes_positive CHECK (minutes_played > 0),
     FOREIGN KEY (player_id) REFERENCES players(id),
     FOREIGN KEY (game_id) REFERENCES games(id)
 ) ENGINE = InnoDB;

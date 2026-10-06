@@ -40,7 +40,11 @@ INSERT INTO game_sessions (player_id, game_id, session_date, minutes_played) VAL
   (4, 5, '2021-09-30', 45),
   (5, 2, '2023-08-14', 130),
   (5, 7, '2023-09-01', 175),
-  (5, 6, '2024-03-20', 260);
+  (5, 6, '2024-03-20', 260),
+  -- repeat sessions of a game the player already played
+  (1, 1, '2023-08-21', 90),
+  (3, 1, '2023-02-14', 180),
+  (5, 6, '2024-04-02', 100);
 
 INSERT INTO followers (player_id, developer_id) VALUES
   (1, 1), (1, 3),

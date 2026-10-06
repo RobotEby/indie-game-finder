@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
 router.get("/trending", async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT g.title AS game, COUNT(s.player_id) AS players_reached
+      SELECT g.title AS game, COUNT(DISTINCT s.player_id) AS players_reached
       FROM games g
       JOIN game_sessions s ON s.game_id = g.id
       GROUP BY g.id, g.title

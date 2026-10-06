@@ -27,6 +27,8 @@ describe('/players routes', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(fakeActivity);
+    // a player can have several sessions of one game: count games, not sessions
+    expect(pool.query.mock.calls[0][0]).toMatch(/COUNT\(DISTINCT s\.game_id\)/);
   });
 
   it('GET /players/:name/library returns the count for the given player', async () => {
@@ -37,5 +39,6 @@ describe('/players routes', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ games_in_library: 3 });
     expect(pool.query).toHaveBeenCalledWith(expect.any(String), ['Alice']);
+    expect(pool.query.mock.calls[0][0]).toMatch(/COUNT\(DISTINCT s\.game_id\)/);
   });
 });
