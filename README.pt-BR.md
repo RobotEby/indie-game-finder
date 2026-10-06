@@ -24,12 +24,12 @@ A maioria das grandes lojas de jogos empurra os mesmos títulos AAA para o topo.
 | `players`         | Usuários da plataforma; cada um com um plano ativo                       |
 | `developers`      | Estúdios indie cadastrados                                                |
 | `games`           | Catálogo de jogos, cada um vinculado a um desenvolvedor principal        |
-| `game_sessions`   | Histórico de jogos já jogados por cada jogador, com tempo total investido|
+| `game_sessions`   | Uma linha por sessão de jogo (jogador, jogo, data, minutos); um jogador pode jogar o mesmo jogo várias vezes |
 | `followers`       | Jogadores que seguem desenvolvedores                                     |
 
 Observação: nomes de tabelas, colunas, código e comentários estão em inglês (convenção comum em projetos de software); este README apenas documenta o projeto em português.
 
-Os scripts estão em `database/schema.sql` (estrutura das tabelas) e `database/seed.sql` (dados de exemplo para desenvolvimento local).
+Os scripts estão em `database/schema.sql` (estrutura das tabelas) e `database/seed.sql` (dados de exemplo para desenvolvimento local). Métricas como `games_played`, `games_in_library` e `players_reached` contam jogos/jogadores **distintos**, não linhas de sessão. Se o seu banco foi criado antes de `game_sessions` aceitar sessões repetidas, aplique `database/migrations/001-game-sessions-multiple-sessions.sql` (MySQL 8.0.16+).
 
 ## Consultas de suporte
 
@@ -73,13 +73,22 @@ Em `database/queries/` ficam consultas SQL independentes para estatísticas gera
 
 ## Testes
 
-Todas as rotas têm testes de integração com Jest + Supertest, usando um mock do pool de conexão (`db/__mocks__/pool.js`) — a suíte roda sem depender de um MySQL real.
+Todas as rotas têm testes com Jest + Supertest, usando um mock do pool de conexão (`db/__mocks__/pool.js`) — a suíte roda sem depender de um MySQL real.
 
 ```sh
 cd api
 npm install
 npm test
 ```
+
+Uma segunda suíte roda as rotas reais contra um MySQL 8.0.16+ de verdade, carregando antes `database/schema.sql` e `database/seed.sql`; assim cobre o que o mock não valida (`GROUP BY` estrito, regras de `CHECK` e chave estrangeira, resultados agregados). **Ela apaga e recria `indieGameFinder`, então use um servidor descartável**; só roda com `RUN_DB_INTEGRATION=1`.
+
+```sh
+cd api
+RUN_DB_INTEGRATION=1 npm run test:integration   # usa DB_HOST / DB_USER / DB_PASSWORD
+```
+
+O GitHub Actions (`.github/workflows/ci.yml`) roda a suíte com mock no Node 20 e 22 e a suíte MySQL contra um container `mysql:8.0` a cada push em `main` e a cada pull request.
 
 ## Roadmap
 
